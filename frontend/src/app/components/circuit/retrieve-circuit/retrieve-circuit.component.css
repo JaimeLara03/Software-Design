@@ -1,0 +1,29 @@
+.card-header {
+  font-weight: bold;
+}
+
+.circuit-visualization {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  min-height: 150px;
+  padding: 15px;
+}
+
+.card-title {
+  color: #3f51b5;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+}
+
+.list-group-item {
+  transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+  background-color: #f1f1f1;
+}
+
+.badge {
+  font-size: 0.85rem;
+}

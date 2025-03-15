@@ -1,0 +1,62 @@
+<div class="card">
+  <div class="card-header bg-primary text-white">
+    <h4>Crear un nuevo circuito cuántico</h4>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="circuitForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="qubits" class="form-label">Número de qubits</label>
+        <input type="number" class="form-control" id="qubits" formControlName="qubits" min="1" max="20">
+        <div *ngIf="isSubmitted && f['qubits'].errors" class="text-danger">
+          <div *ngIf="f['qubits'].errors['required']">El número de qubits es obligatorio</div>
+          <div *ngIf="f['qubits'].errors['min']">El número de qubits debe ser al menos 1</div>
+          <div *ngIf="f['qubits'].errors['max']">El número de qubits no puede ser mayor que 20</div>
+        </div>
+        <small class="form-text text-muted">
+          Los circuitos con más de 6 qubits requieren crédito adicional.
+        </small>
+      </div>
+      
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="circuitForm.invalid">Crear Circuito</button>
+      </div>
+    </form>
+    
+    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+      {{ errorMessage }}
+    </div>
+    
+    <!-- Resultado de la creación del circuito -->
+    <div *ngIf="createdCircuit && !insufficientCredit" class="mt-4">
+      <div class="alert alert-success">
+        ¡Circuito creado con éxito!
+      </div>
+      
+      <div class="card mt-3">
+        <div class="card-header">
+          Detalles del circuito
+        </div>
+        <div class="card-body">
+          <p><strong>ID del circuito:</strong> {{ createdCircuit.id }}</p>
+          <p><strong>Número de qubits:</strong> {{ createdCircuit.qubits }}</p>
+          
+          <div *ngIf="createdCircuit.needsCredit" class="alert alert-info">
+            <p><strong>Coste:</strong> {{ createdCircuit.coste }} €</p>
+            <p>Este circuito requiere crédito adicional debido al número de qubits.</p>
+          </div>
+          
+          <div class="d-grid gap-2 mt-3">
+            <a [routerLink]="['/retrieve-circuit', createdCircuit.id]" class="btn btn-primary">Ver detalles del circuito</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mensaje de crédito insuficiente -->
+    <div *ngIf="insufficientCredit" class="alert alert-warning mt-3">
+      <p>No tienes suficiente crédito para crear este circuito.</p>
+      <p>Por favor, añade crédito a tu cuenta para continuar.</p>
+      <button class="btn btn-success mt-2" (click)="goToPayment()">Realizar Pago</button>
+    </div>
+  </div>
+</div>

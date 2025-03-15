@@ -1,0 +1,70 @@
+<div class="card">
+  <div class="card-header bg-primary text-white">
+    <h4>Detalles del Circuito</h4>
+  </div>
+  <div class="card-body">
+    <!-- Spinner de carga -->
+    <div *ngIf="loading" class="d-flex justify-content-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+    
+    <!-- Mensaje de error -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+    
+    <!-- Detalles del circuito -->
+    <div *ngIf="circuit && !loading">
+      <div class="mb-4">
+        <h5 class="card-title">Información General</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>ID:</strong> {{ circuit.id }}</p>
+            <p><strong>Nombre:</strong> {{ circuit.nombre || 'Sin nombre' }}</p>
+            <p><strong>Descripción:</strong> {{ circuit.descripcion || 'Sin descripción' }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Ubicación:</strong> {{ circuit.ubicacion || 'No especificada' }}</p>
+            <p><strong>Coste:</strong> {{ circuit.coste || 0 }} €</p>
+            <p><strong>Número de qubits:</strong> {{ circuit.qubits || 0 }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-4">
+        <h5 class="card-title">Estructura del Circuito</h5>
+        <div class="card">
+          <div class="card-body">
+            <p><strong>Puertas:</strong></p>
+            <ul class="list-group">
+              <li *ngFor="let gate of circuit.gates | keyvalue" class="list-group-item d-flex justify-content-between align-items-center">
+                {{ gate.key }}
+                <span class="badge bg-primary rounded-pill">{{ gate.value }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Representación visual del circuito (simulado) -->
+      <div class="mt-4">
+        <h5 class="card-title">Visualización del Circuito</h5>
+        <div class="bg-light p-3 rounded">
+          <div class="circuit-visualization">
+            <!-- Aquí se podría añadir una representación visual del circuito -->
+            <div class="alert alert-info">
+              La visualización detallada del circuito estará disponible en futuras actualizaciones.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Botón para volver -->
+    <div class="d-grid gap-2 mt-4">
+      <a routerLink="/" class="btn btn-primary">Volver al Inicio</a>
+    </div>
+  </div>
+</div>

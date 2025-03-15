@@ -1,0 +1,25 @@
+.card-header {
+  font-weight: bold;
+}
+
+.form-label {
+  font-weight: 500;
+}
+
+.alert {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}

@@ -1,0 +1,48 @@
+<div class="jumbotron text-center bg-light p-4 rounded-3 mb-4">
+  <h1>Bienvenido a la Aplicación de Gestión de Circuitos</h1>
+  <p class="lead">Una plataforma para crear y gestionar circuitos cuánticos</p>
+  <hr class="my-4">
+  <p *ngIf="isLoggedIn">¡Hola, {{ username }}! Explora nuestras funcionalidades.</p>
+  <p *ngIf="!isLoggedIn">Regístrate o inicia sesión para acceder a todas las funcionalidades.</p>
+  <div class="d-flex justify-content-center gap-2">
+    <a *ngIf="!isLoggedIn" class="btn btn-primary btn-lg" routerLink="/register" role="button">Registrarse</a>
+    <a *ngIf="!isLoggedIn" class="btn btn-success btn-lg" routerLink="/login" role="button">Iniciar Sesión</a>
+    <a class="btn btn-info btn-lg" routerLink="/create-circuit" role="button">Crear Circuito</a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Gestión de Circuitos</h5>
+        <p class="card-text">Crea y recupera circuitos cuánticos personalizados según tus necesidades.</p>
+        <ul class="list-group list-group-flush mb-3">
+          <li class="list-group-item">Definición del número de qubits</li>
+          <li class="list-group-item">Configuración de puertas lógicas</li>
+          <li class="list-group-item">Visualización de resultados</li>
+        </ul>
+        <a routerLink="/create-circuit" class="btn btn-primary">Crear Circuito</a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Gestión de Cuentas</h5>
+        <p class="card-text">Administra tu cuenta y realiza pagos para acceder a funcionalidades avanzadas.</p>
+        <ul class="list-group list-group-flush mb-3">
+          <li class="list-group-item">Registro y verificación de cuenta</li>
+          <li class="list-group-item">Gestión de créditos</li>
+          <li class="list-group-item">Procesamiento de pagos seguros</li>
+        </ul>
+        <div class="d-flex gap-2">
+          <a *ngIf="!isLoggedIn" routerLink="/register" class="btn btn-primary">Crear Cuenta</a>
+          <a *ngIf="isLoggedIn" routerLink="/profile" class="btn btn-primary">Mi Perfil</a>
+          <a *ngIf="isLoggedIn" routerLink="/payment" class="btn btn-success">Realizar Pago</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

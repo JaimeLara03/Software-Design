@@ -1,0 +1,99 @@
+<div class="card">
+  <div class="card-header bg-primary text-white">
+    <h4>Realizar Pago</h4>
+  </div>
+  <div class="card-body">
+    <div *ngIf="isSuccess" class="alert alert-success">
+      ¡El pago se ha procesado con éxito!
+      <br>Serás redirigido a tu perfil en unos segundos...
+    </div>
+
+    <ng-container *ngIf="!isSuccess">
+      <!-- Información del circuito si existe -->
+      <div *ngIf="pendingCircuit" class="alert alert-info mb-4">
+        <h5>Pago para circuito</h5>
+        <p><strong>ID del circuito:</strong> {{ pendingCircuit.id }}</p>
+        <p><strong>Número de qubits:</strong> {{ pendingCircuit.qubits }}</p>
+        <p><strong>Coste:</strong> {{ pendingCircuit.cost }} €</p>
+      </div>
+
+      <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="monto" class="form-label">Monto (€)</label>
+          <input type="number" class="form-control" id="monto" formControlName="monto" min="1">
+          <div *ngIf="isSubmitted && f['monto'].errors" class="text-danger">
+            <div *ngIf="f['monto'].errors['required']">El monto es obligatorio</div>
+            <div *ngIf="f['monto'].errors['min']">El monto debe ser al menos 1€</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="metodoPago" class="form-label">Método de Pago</label>
+          <select class="form-select" id="metodoPago" formControlName="metodoPago">
+            <option *ngFor="let method of paymentMethods" [value]="method.id">{{ method.name }}</option>
+          </select>
+          <div *ngIf="isSubmitted && f['metodoPago'].errors" class="text-danger">
+            <div *ngIf="f['metodoPago'].errors['required']">El método de pago es obligatorio</div>
+          </div>
+        </div>
+
+        <!-- Campos específicos para tarjeta de crédito -->
+        <div *ngIf="f['metodoPago'].value === 'tarjeta'">
+          <div class="mb-3">
+            <label for="numeroTarjeta" class="form-label">Número de Tarjeta</label>
+            <input type="text" class="form-control" id="numeroTarjeta" formControlName="numeroTarjeta" placeholder="XXXX XXXX XXXX XXXX">
+            <div *ngIf="isSubmitted && f['numeroTarjeta'].errors" class="text-danger">
+              <div *ngIf="f['numeroTarjeta'].errors['required']">El número de tarjeta es obligatorio</div>
+              <div *ngIf="f['numeroTarjeta'].errors['pattern']">El número de tarjeta debe tener 16 dígitos</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="fechaExpiracion" class="form-label">Fecha de Expiración</label>
+              <input type="text" class="form-control" id="fechaExpiracion" formControlName="fechaExpiracion" placeholder="MM/YY">
+              <div *ngIf="isSubmitted && f['fechaExpiracion'].errors" class="text-danger">
+                <div *ngIf="f['fechaExpiracion'].errors['required']">La fecha de expiración es obligatoria</div>
+                <div *ngIf="f['fechaExpiracion'].errors['pattern']">Formato incorrecto. Use MM/YY</div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="cvv" class="form-label">CVV</label>
+              <input type="text" class="form-control" id="cvv" formControlName="cvv" placeholder="XXX">
+              <div *ngIf="isSubmitted && f['cvv'].errors" class="text-danger">
+                <div *ngIf="f['cvv'].errors['required']">El CVV es obligatorio</div>
+                <div *ngIf="f['cvv'].errors['pattern']">El CVV debe tener 3 o 4 dígitos</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información para PayPal -->
+        <div *ngIf="f['metodoPago'].value === 'paypal'" class="alert alert-info mb-3">
+          <p>Serás redirigido a PayPal para completar el pago después de enviar este formulario.</p>
+        </div>
+
+        <!-- Información para Transferencia -->
+        <div *ngIf="f['metodoPago'].value === 'transferencia'" class="alert alert-info mb-3">
+          <p>Realiza una transferencia con la siguiente información:</p>
+          <ul>
+            <li><strong>Banco:</strong> Banco Quantum</li>
+            <li><strong>IBAN:</strong> ES12 3456 7890 1234 5678 9012</li>
+            <li><strong>Beneficiario:</strong> Circuits Quantum, S.L.</li>
+            <li><strong>Concepto:</strong> Pago Circuit ID:{{ pendingCircuit?.id || 'N/A' }} Usuario:{{ userId }}</li>
+          </ul>
+          <p>Tu cuenta será actualizada una vez se verifique la transferencia.</p>
+        </div>
+
+        <div class="alert alert-danger" *ngIf="isFailed">
+          {{ errorMessage }}
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid">Realizar Pago</button>
+        </div>
+      </form>
+    </ng-container>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="card">
+  <div class="card-header bg-primary text-white">
+    <h4>Iniciar Sesión</h4>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="email" class="form-label">Correo Electrónico</label>
+        <input type="email" class="form-control" id="email" formControlName="email">
+        <div *ngIf="isSubmitted && f['email'].errors" class="text-danger">
+          <div *ngIf="f['email'].errors['required']">El correo electrónico es obligatorio</div>
+          <div *ngIf="f['email'].errors['email']">El formato del correo electrónico no es válido</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <input type="password" class="form-control" id="password" formControlName="password">
+        <div *ngIf="isSubmitted && f['password'].errors" class="text-danger">
+          <div *ngIf="f['password'].errors['required']">La contraseña es obligatoria</div>
+        </div>
+      </div>
+
+      <div class="mb-3 text-end">
+        <a routerLink="/recuperar-password">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="isLoginFailed">
+        {{ errorMessage }}
+      </div>
+
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Iniciar Sesión</button>
+      </div>
+    </form>
+
+    <div class="mt-3 text-center">
+      ¿No tienes una cuenta? <a routerLink="/register">Regístrate</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+.navbar-brand {
+  font-weight: bold;
+}
+
+.nav-link.active {
+  font-weight: bold;
+  color: white !important;
+}
+
+.dropdown-menu {
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item:active {
+  background-color: #3f51b5;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: white;
+}

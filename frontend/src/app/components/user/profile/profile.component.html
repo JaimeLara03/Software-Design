@@ -1,0 +1,113 @@
+<div class="card">
+  <div class="card-header bg-primary text-white">
+    <h4>Mi Perfil</h4>
+  </div>
+  <div class="card-body">
+    <div *ngIf="!currentUser" class="alert alert-warning">
+      Por favor, inicia sesión para ver tu perfil.
+    </div>
+
+    <ng-container *ngIf="currentUser">
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5>Información Personal</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Nombre:</strong> {{ currentUser.nombre }} {{ currentUser.apellido }}</p>
+              <p><strong>Email:</strong> {{ currentUser.email }}</p>
+              <p><strong>Crédito Disponible:</strong> {{ currentUser.credito }} €</p>
+              <button class="btn btn-success mt-2" (click)="goToPayment()">Añadir Crédito</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5>Estado de la Cuenta</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <p><strong>Estado:</strong> 
+                  <span class="badge" [ngClass]="{'bg-success': currentUser.verificado, 'bg-warning': !currentUser.verificado}">
+                    {{ currentUser.verificado ? 'Verificado' : 'Pendiente de verificación' }}
+                  </span>
+                </p>
+                <div *ngIf="!currentUser.verificado" class="alert alert-warning">
+                  Por favor, verifica tu cuenta siguiendo el enlace que te hemos enviado por correo electrónico.
+                </div>
+              </div>
+              
+              <div class="progress">
+                <div class="progress-bar bg-primary" role="progressbar" [style.width]="(currentUser.credito > 100 ? 100 : currentUser.credito) + '%'" 
+                    [attr.aria-valuenow]="currentUser.credito" aria-valuemin="0" aria-valuemax="100">
+                  {{ currentUser.credito }} €
+                </div>
+              </div>
+              <small class="text-muted mt-2 d-block">Crédito disponible para circuitos cuánticos avanzados.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historial de Pagos -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5>Historial de Pagos</h5>
+        </div>
+        <div class="card-body">
+          <!-- Spinner de carga -->
+          <div *ngIf="loading" class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          
+          <!-- Mensaje de error -->
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+          
+          <!-- Tabla de pagos -->
+          <div *ngIf="!loading && !errorMessage && paymentHistory.length > 0" class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Circuito ID</th>
+                  <th>Monto</th>
+                  <th>Método de Pago</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let payment of paymentHistory">
+                  <td>{{ payment.id }}</td>
+                  <td>{{ payment.circuitoId }}</td>
+                  <td>{{ payment.monto }} €</td>
+                  <td>{{ payment.metodoPago }}</td>
+                  <td>{{ payment.fechaPago | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-success': payment.estado === 'COMPLETADO',
+                      'bg-warning': payment.estado === 'PENDIENTE',
+                      'bg-danger': payment.estado === 'FALLIDO'
+                    }">{{ payment.estado }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Sin pagos -->
+          <div *ngIf="!loading && !errorMessage && paymentHistory.length === 0" class="alert alert-info">
+            No hay pagos registrados en tu historial.
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
