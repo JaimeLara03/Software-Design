@@ -12,7 +12,7 @@ export class CircuitService {
   constructor(private http: HttpClient) { }
 
   createCircuit(qubits: number): Observable<any> {
-    return this.http.get<any>(`${API_URL}createCircuit/${qubits}`);
+    return this.http.get<any>(`${API_URL}createCircuit?qubits=${qubits}`);
   }
 
   retrieveCircuit(id: number): Observable<any> {

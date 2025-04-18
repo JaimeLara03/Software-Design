@@ -46,11 +46,12 @@ public class UsuarioService {
         
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         usuario.setActivo(true);
-        usuario.setVerificado(false);
+        usuario.setVerificado(true); // Cambiar a true para que los usuarios puedan iniciar sesión sin verificar email
         usuario.setTokenVerificacion(UUID.randomUUID().toString());
         
         Usuario nuevoUsuario = usuarioRepository.save(usuario);
-        emailService.enviarEmailVerificacion(nuevoUsuario.getEmail(), nuevoUsuario.getTokenVerificacion());
+        // Comentado temporalmente hasta solucionar el envío de correos
+        // emailService.enviarEmailVerificacion(nuevoUsuario.getEmail(), nuevoUsuario.getTokenVerificacion());
         
         return nuevoUsuario;
     }

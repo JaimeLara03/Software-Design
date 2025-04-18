@@ -51,15 +51,31 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    console.log('Enviando solicitud de inicio de sesión:', {
+      email: this.f['email'].value,
+      password: '********' // No mostrar la contraseña en el log
+    });
+
     this.authService.login({
       email: this.f['email'].value,
       password: this.f['password'].value
     }).subscribe({
       next: data => {
+        console.log('Inicio de sesión exitoso');
         this.router.navigate([this.returnUrl]);
       },
       error: err => {
-        this.errorMessage = err.error?.message || 'Error al iniciar sesión';
+        console.error('Error en inicio de sesión:', err);
+        
+        // Manejar diferentes tipos de errores
+        if (typeof err.error === 'string') {
+          this.errorMessage = err.error || 'Error al iniciar sesión';
+        } else if (err.error && err.error.message) {
+          this.errorMessage = err.error.message;
+        } else {
+          this.errorMessage = 'Error al iniciar sesión. Verifica tus credenciales.';
+        }
+        
         this.isLoginFailed = true;
       }
     });
