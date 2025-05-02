@@ -6,7 +6,7 @@ Esta guía explica paso a paso cómo clonar, instalar y ejecutar correctamente t
 
 ```bash
 # Clonar el repositorio
-git clone <url_del_repositorio> circuits
+git clone https://github.com/JaimeLara03/Software-Design.git circuits
 cd circuits
 ```
 
