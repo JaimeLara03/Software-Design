@@ -67,12 +67,7 @@ mvn -v
 
 ### Configurar el Backend
 
-Navega a la carpeta raíz del proyecto si no estás ya en ella:
-
-```bash
-cd circuits
-```
-
+Navega a la carpeta raíz del proyecto si no estás ya en ella.
 Compila el proyecto para instalar todas las dependencias:
 
 ```bash
@@ -86,7 +81,7 @@ mvn clean install -DskipTests
 Abre una nueva terminal y navega a la carpeta del frontend:
 
 ```bash
-cd circuits/frontend
+cd frontend
 ```
 
 Instala las dependencias del frontend:
