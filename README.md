@@ -121,11 +121,11 @@ ng serve
 
 El frontend estará disponible en: http://localhost:4200
 
-####Linux
+#### Linux
 
 Luego puedes ejecutar `./clean-repo.sh` cada vez que quieras limpiar el proyecto.
 
-####Windows
+#### Windows
 
 Luego puedes ejecutar `.\clean-repo.ps1` cada vez que quieras limpiar el proyecto.
 
