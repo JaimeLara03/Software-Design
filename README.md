@@ -115,7 +115,7 @@ El backend estará disponible en: http://localhost:8080
 En una nueva terminal, desde la carpeta frontend:
 
 ```bash
-cd circuits/frontend
+cd frontend
 ng serve
 ```
 
