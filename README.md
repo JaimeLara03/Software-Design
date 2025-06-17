@@ -103,7 +103,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=test
 Puede ser que tengas problemas a la hora de inicializar el backend. Si tienes problemas, ejecuta el siguiente comando en lugar de el de arriba:
 
 ```bash
-mvn spring-boot:run
+mvn spring-boot:run --% -Dspring-boot.run.profiles=test
 ```
 
 > **Importante**: El perfil de prueba desactiva la seguridad para facilitar el desarrollo y las pruebas. NO utilices este perfil en producción.
