@@ -1,10 +1,11 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { User, LoginRequest, JwtResponse } from '../models/user.model';
 
-const AUTH_API = 'http://localhost:8080/api/auth/';
+const AUTH_API = environment.usersApiUrl + '/auth/';
 const TOKEN_KEY = 'auth-token';
 const USER_KEY = 'auth-user';
 
@@ -48,14 +49,9 @@ export class AuthService {
       email: credentials.email,
       password: credentials.password
     }, httpOptions).pipe(
-      catchError((error: any) => {
-        console.log('Error con el endpoint principal, intentando con alternativa');
-        // 2. Si falla, intentar con la ruta alternativa /api/usuarios/login
-        return this.http.post<JwtResponse>('http://localhost:8080/api/auth/login', {
-          email: credentials.email,
-          password: credentials.password
-        }, httpOptions);
-      }),
+      // Removed catchError block with fallback to old URL.
+      // The primary AUTH_API should now point to the correct users-service.
+      // If login fails, it should be handled by displaying an error, not trying an old URL.
       tap(
         response => {
           console.log('Inicio de sesión exitoso:', response);
@@ -68,9 +64,9 @@ export class AuthService {
   }
 
   register(user: User): Observable<any> {
-    console.log('Registrando usuario en URL: http://localhost:8080/api/usuarios/registro');
+    console.log('Registrando usuario en URL: ' + environment.usersApiUrl + '/auth/register');
     console.log('Datos de usuario:', user);
-    return this.http.post('http://localhost:8080/api/usuarios/registro', {
+    return this.http.post(environment.usersApiUrl + '/auth/register', {
       nombre: user.nombre,
       apellido: user.apellido,
       email: user.email,

@@ -1,9 +1,10 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Payment, PaymentRequest } from '../models/payment.model';
 
-const API_URL = 'http://localhost:8080/api/pagos/';
+const API_URL = environment.paymentsApiUrl + '/pagos/'; // Path assumes /api is part of paymentsApiUrl
 
 @Injectable({
   providedIn: 'root'

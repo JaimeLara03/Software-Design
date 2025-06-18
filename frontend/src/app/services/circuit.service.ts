@@ -1,9 +1,10 @@
+import { environment } from 'src/environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Circuit } from '../models/circuit.model';
 
-const API_URL = 'http://localhost:8080/circuits/';
+const API_URL = environment.circuitsApiUrl + '/circuits/';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class CircuitService {
     return this.http.get<any>(`${API_URL}retrieveCircuit/${id}`);
   }
 
-  getUserCredit(userId: number): Observable<any> {
-    return this.http.get<any>(`${API_URL}getUserCredit/${userId}`);
+  getUserCredit(userId: number): Observable<number> {
+    return this.http.get<number>(`${API_URL}user/${userId}/credit`);
   }
 }
