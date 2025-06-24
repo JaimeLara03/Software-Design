@@ -64,9 +64,9 @@ export class AuthService {
   }
 
   register(user: User): Observable<any> {
-    console.log('Registrando usuario en URL: ' + environment.usersApiUrl + '/auth/register');
+    console.log('Registrando usuario en URL: ' + environment.usersApiUrl + '/auth/signup');
     console.log('Datos de usuario:', user);
-    return this.http.post(environment.usersApiUrl + '/auth/register', {
+    return this.http.post(environment.usersApiUrl + '/auth/signup', {
       nombre: user.nombre,
       apellido: user.apellido,
       email: user.email,

@@ -19,7 +19,7 @@ import edu.uclm.esi.iso2.circuits.service.CircuitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
-@RequestMapping("circuits")
+@RequestMapping("/api/circuits")
 public class CircuitController {
 
     @Autowired
