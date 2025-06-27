@@ -10,6 +10,7 @@ import edu.uclm.esi.iso2.payments.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -22,23 +23,26 @@ public class PagoService {
     private final UsersClient usersClient;
     private final ConcurrentHashMap<String, Map<String, Object>> pagosMem = new ConcurrentHashMap<>();
 
+    private final String stripeSecretKey;
+
     public PagoService(CircuitsClient circuitsClient,
                        UsersClient usersClient,
                        @Value("${stripe.secretKey}") String stripeSecretKey) {
         this.circuitsClient = circuitsClient;
         this.usersClient = usersClient;
-        Stripe.apiKey = stripeSecretKey;
+        this.stripeSecretKey = stripeSecretKey;
     }
 
-    /**
-     * Crea un PaymentIntent en Stripe y, en modo test, descuenta el crédito inmediatamente.
-     */
+    @PostConstruct
+    public void init() {
+        Stripe.apiKey = stripeSecretKey;  // Configuramos la clave de Stripe tras construcción del bean
+    }
+
     public Map<String, Object> procesarPago(Long usuarioId, Long circuitoId, String metodoPago) {
         var usuario = usersClient.getUsuarioById(usuarioId);
         var circuito = circuitsClient.getCircuitoById(circuitoId);
         double coste = Double.parseDouble(circuito.get("coste").toString());
 
-        // comprobar crédito
         if (!usersClient.comprobarCredito(usuarioId, coste)) {
             return Map.of("success", false, "message", "Crédito insuficiente");
         }
@@ -52,15 +56,14 @@ public class PagoService {
                     .setCurrency("eur")
                     .setDescription("Pago circuito " + circuitoId)
                     .putMetadata("referencia", referencia)
-                    .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(true).build())
+                    .setAutomaticPaymentMethods(
+                        PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                            .setEnabled(true)
+                            .build()
+                    )
                     .build();
 
             PaymentIntent intent = PaymentIntent.create(params);
-
-            if ("succeeded".equals(intent.getStatus())) {
-                double nuevoCredito = Double.parseDouble(usuario.get("credito").toString()) - coste;
-                usersClient.actualizarCredito(usuarioId, nuevoCredito);
-            }
 
             Map<String, Object> info = Map.of(
                     "referencia", referencia,
