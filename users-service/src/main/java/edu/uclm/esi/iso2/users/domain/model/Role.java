@@ -1,4 +1,4 @@
-package edu.uclm.esi.iso2.users.domain.users.model; // Corrected package
+package edu.uclm.esi.iso2.users.domain.model;
 
 public enum Role {
     ROLE_USER,

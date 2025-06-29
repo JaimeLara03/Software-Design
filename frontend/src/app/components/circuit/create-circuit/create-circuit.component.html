@@ -4,6 +4,9 @@
   </div>
   <div class="card-body">
     <form [formGroup]="circuitForm" (ngSubmit)="onSubmit()">
+      <!-- Campos ocultos para nombre, descripción y activo -->
+
+      <!-- Campo qubits original -->
       <div class="mb-3">
         <label for="qubits" class="form-label">Número de qubits</label>
         <input type="number" class="form-control" id="qubits" formControlName="qubits" min="1" max="20">
@@ -15,6 +18,30 @@
         <small class="form-text text-muted">
           Los circuitos con más de 6 qubits requieren crédito adicional.
         </small>
+      </div>
+
+      <!-- Tabla de verdad -->
+      <div *ngIf="f['qubits'].value as q">
+        <h5>Tabla de verdad</h5>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th *ngFor="let idx of qubitIndices">Q{{idx}}</th>
+              <th>Salida</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of truthRows; let i = index">
+              <td *ngFor="let bit of row" class="text-center align-middle">{{ bit }}</td>
+              <td>
+                <select [(ngModel)]="outputs[i]" [ngModelOptions]="{standalone: true}" class="form-select form-select-sm">
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       
       <div class="d-grid gap-2">

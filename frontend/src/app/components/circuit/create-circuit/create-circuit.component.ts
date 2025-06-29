@@ -12,6 +12,9 @@ import { Circuit } from '../../../models/circuit.model';
 })
 export class CreateCircuitComponent implements OnInit {
   circuitForm!: FormGroup;
+  truthRows: string[][] = []; // matriz de bits por fila
+  outputs: string[] = [];   // valores 0/1 editados
+  qubitIndices: number[] = [];
   isSubmitted = false;
   errorMessage = '';
   isLoggedIn = false;
@@ -27,9 +30,22 @@ export class CreateCircuitComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Formulario con campos básicos; truthTable se gestiona aparte
+
     this.circuitForm = this.formBuilder.group({
-      qubits: [6, [Validators.required, Validators.min(1), Validators.max(20)]]
+      nombre: [''],
+      descripcion: [''],
+      activo: [true],
+      qubits: [3, [Validators.required, Validators.min(1), Validators.max(10)]]
     });
+
+    // Generar tabla al cambiar qubits
+    this.circuitForm.get('qubits')?.valueChanges.subscribe((q:number)=>{
+      this.generateTruthTable(q);
+    });
+
+    // Generar tabla de verdad inicial
+    this.generateTruthTable(this.f['qubits'].value);
 
     this.isLoggedIn = this.authService.isLoggedIn();
     if (this.isLoggedIn) {
@@ -53,8 +69,23 @@ export class CreateCircuitComponent implements OnInit {
     }
 
     const qubits = this.f['qubits'].value;
-    
-    this.circuitService.createCircuit(qubits).subscribe({
+
+    // Construir truth table a partir de outputs
+    const truthTable = this.outputs.map(o => o === '1' ? '1' : '0');
+
+    const timestamp = new Date().getTime();
+    const nombre = `Circuito ${timestamp}`;
+    const descripcion = `Circuito de ${qubits} qubits generado automáticamente.`;
+
+    const payload = {
+      nombre: nombre,
+      descripcion: descripcion,
+      activo: true,
+      qubits: qubits,
+      truthTable: truthTable
+    };
+
+    this.circuitService.createCircuit(payload).subscribe({
       next: (data) => {
         this.createdCircuit = data;
         
@@ -84,6 +115,18 @@ export class CreateCircuitComponent implements OnInit {
         this.errorMessage = 'Error al crear el circuito: ' + err.message;
       }
     });
+  }
+
+  private generateTruthTable(qubits:number){
+    const rows = Math.pow(2,qubits);
+    this.truthRows = [];
+    this.outputs = [];
+    this.qubitIndices = Array.from({length: qubits}, (_,i)=>i);
+    for(let i=0;i<rows;i++){
+      const bits = i.toString(2).padStart(qubits,'0').split('');
+      this.truthRows.push(bits);
+      this.outputs.push('0');
+    }
   }
 
   goToPayment(): void {

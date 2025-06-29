@@ -1,0 +1,8 @@
+.circuit-container {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #dee2e6;
+  border-radius: .375rem;
+  background-color: #f8f9fa;
+  overflow-x: auto; 
+}

@@ -5,13 +5,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import edu.uclm.esi.iso2.circuits.domain.circuits.model.Circuito;
-import edu.uclm.esi.iso2.circuits.domain.circuits.service.CircuitoService;
+
+
+import edu.uclm.esi.iso2.circuits.domain.model.Circuito;
+import edu.uclm.esi.iso2.circuits.domain.service.CircuitoService;
 
 import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/circuitos")
 public class CircuitoController {
 
@@ -34,6 +37,21 @@ public class CircuitoController {
     public ResponseEntity<Circuito> createCircuito(@Valid @RequestBody Circuito circuito) {
         Circuito nuevoCircuito = circuitoService.createCircuito(circuito);
         return new ResponseEntity<>(nuevoCircuito, HttpStatus.CREATED);
+    }
+
+    
+    // Endpoint alternativo para crear circuitos usando un parámetro "qubits" desde el front
+    @GetMapping(params = "qubits")
+    public ResponseEntity<Circuito> createCircuitoPorQubits(@RequestParam int qubits) {
+        Circuito circuito = new Circuito();
+        circuito.setNombre("Circuito autogen");
+        circuito.setDescripcion("Generado automáticamente");
+        circuito.setUbicacion("Desconocida");
+        circuito.setQubits(qubits);
+        circuito.setCoste(0);
+        circuito.setActivo(true);
+        Circuito nuevo = circuitoService.createCircuito(circuito);
+        return new ResponseEntity<>(nuevo, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

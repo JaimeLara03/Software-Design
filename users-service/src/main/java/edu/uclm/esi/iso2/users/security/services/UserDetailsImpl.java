@@ -1,6 +1,6 @@
 package edu.uclm.esi.iso2.users.security.services;
 
-import edu.uclm.esi.iso2.users.domain.users.model.Usuario;
+import edu.uclm.esi.iso2.users.domain.model.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -38,10 +38,19 @@
         <div class="card">
           <div class="card-body">
             <p><strong>Puertas:</strong></p>
-            <ul class="list-group">
-              <li *ngFor="let gate of circuit.gates | keyvalue" class="list-group-item d-flex justify-content-between align-items-center">
-                {{ gate.key }}
-                <span class="badge bg-primary rounded-pill">{{ gate.value }}</span>
+            <ul class="list-group list-group-flush">
+              <li *ngFor="let puerta of circuit.puertas" class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="badge bg-primary rounded-pill px-3 py-2 me-3">{{ puerta.nombre }}</span>
+                <div>
+                  <span class="me-3">
+                    <strong class="small text-muted">OBJETIVO:</strong>
+                    <span class="badge bg-dark">{{ puerta.qubitObjetivo }}</span>
+                  </span>
+                  <span *ngIf="puerta.qubitControl !== null">
+                    <strong class="small text-muted">CONTROL:</strong>
+                    <span class="badge bg-info text-dark">{{ puerta.qubitControl }}</span>
+                  </span>
+                </div>
               </li>
             </ul>
           </div>
@@ -53,10 +62,7 @@
         <h5 class="card-title">Visualización del Circuito</h5>
         <div class="bg-light p-3 rounded">
           <div class="circuit-visualization">
-            <!-- Aquí se podría añadir una representación visual del circuito -->
-            <div class="alert alert-info">
-              La visualización detallada del circuito estará disponible en futuras actualizaciones.
-            </div>
+            <app-circuit-visualizer [circuit]="circuit"></app-circuit-visualizer>
           </div>
         </div>
       </div>

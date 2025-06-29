@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 @Configuration
@@ -48,9 +49,11 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         // Assuming the jwtSharedSecret is Base64 encoded, as it was in users-service JwtUtils
-        byte[] keyBytes = jwtSharedSecret.getBytes(StandardCharsets.UTF_8);
-        SecretKey key = new SecretKeySpec(keyBytes, 0, keyBytes.length, "HMACSHA256");
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        byte[] keyBytes = Base64.getDecoder().decode(jwtSharedSecret);
+        SecretKey key = new SecretKeySpec(keyBytes, 0, keyBytes.length, "HmacSHA512");
+        return NimbusJwtDecoder.withSecretKey(key)
+                .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512)
+                .build();
     }
 
     @Bean

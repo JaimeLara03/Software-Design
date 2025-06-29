@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import edu.uclm.esi.iso2.users.domain.users.model.Usuario;
-import edu.uclm.esi.iso2.users.domain.users.service.UsuarioService;
+import edu.uclm.esi.iso2.users.domain.model.Usuario;
+import edu.uclm.esi.iso2.users.domain.service.UsuarioService;
 import edu.uclm.esi.iso2.users.payload.request.LoginRequest;
 import edu.uclm.esi.iso2.users.payload.request.PasswordResetRequest;
 import edu.uclm.esi.iso2.users.payload.response.JwtResponse;

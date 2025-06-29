@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-    basePackages = {"edu.uclm.esi.iso2.users.domain.users.repository"}
+    basePackages = {"edu.uclm.esi.iso2.users.domain.repository"}
 )
 public class UsersDbConfig {
     // Configuración simplificada para usar una única fuente de datos

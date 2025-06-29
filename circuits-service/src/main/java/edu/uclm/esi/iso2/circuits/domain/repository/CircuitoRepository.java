@@ -1,8 +1,8 @@
-package edu.uclm.esi.iso2.circuits.domain.circuits.repository;
+package edu.uclm.esi.iso2.circuits.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import edu.uclm.esi.iso2.circuits.domain.circuits.model.Circuito;
+import edu.uclm.esi.iso2.circuits.domain.model.Circuito;
 import java.util.List;
 import java.util.Optional;
 

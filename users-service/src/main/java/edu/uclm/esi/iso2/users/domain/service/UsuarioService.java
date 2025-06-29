@@ -1,18 +1,23 @@
-package edu.uclm.esi.iso2.users.domain.users.service;
+package edu.uclm.esi.iso2.users.domain.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.uclm.esi.iso2.users.domain.users.model.Usuario;
-import edu.uclm.esi.iso2.users.domain.users.repository.UsuarioRepository;
+import edu.uclm.esi.iso2.users.domain.model.Usuario;
+import edu.uclm.esi.iso2.users.domain.service.EmailService;
+import edu.uclm.esi.iso2.users.domain.repository.UsuarioRepository;
 import edu.uclm.esi.iso2.users.exception.ResourceNotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class UsuarioService {
 
     @Autowired
@@ -49,9 +54,15 @@ public class UsuarioService {
         usuario.setVerificado(true); // Cambiar a true para que los usuarios puedan iniciar sesión sin verificar email
         usuario.setTokenVerificacion(UUID.randomUUID().toString());
 
-        Usuario nuevoUsuario = usuarioRepository.save(usuario);
-        // Comentado temporalmente hasta solucionar el envío de correos
-        // emailService.enviarEmailVerificacion(nuevoUsuario.getEmail(), nuevoUsuario.getTokenVerificacion());
+    // Asignar rol por defecto
+    usuario.getRoles().add(edu.uclm.esi.iso2.users.domain.model.Role.ROLE_USER);
+
+        Usuario nuevoUsuario = usuarioRepository.saveAndFlush(usuario);
+        try {
+            emailService.enviarEmailVerificacion(nuevoUsuario.getEmail(), nuevoUsuario.getTokenVerificacion());
+        } catch (Exception e) {
+            log.error("Error al enviar el email de verificación para {}. La cuenta se ha creado igualmente.", nuevoUsuario.getEmail(), e);
+        }
 
         return nuevoUsuario;
     }
@@ -75,35 +86,54 @@ public class UsuarioService {
 
     @Transactional
     public boolean verificarCuenta(String token) {
-        Usuario usuario = usuarioRepository.findByTokenVerificacion(token)
-                .orElseThrow(() -> new ResourceNotFoundException("Token de verificación no válido"));
-
-        usuario.setVerificado(true);
-        usuario.setTokenVerificacion(null);
-        usuarioRepository.save(usuario);
-
-        emailService.enviarEmailConfirmacionCreacionCuenta(usuario.getEmail());
-
-        return true;
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByTokenVerificacion(token);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            usuario.setVerificado(true);
+            usuario.setTokenVerificacion(null);
+            usuarioRepository.save(usuario);
+            emailService.enviarEmailConfirmacionCreacionCuenta(usuario.getEmail());
+            return true;
+        }
+        return false;
     }
 
     @Transactional
     public void solicitarRecuperacionContrasena(String email) {
-        Usuario usuario = getUsuarioByEmail(email);
-        usuario.setTokenVerificacion(UUID.randomUUID().toString());
-        usuarioRepository.save(usuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            String token = UUID.randomUUID().toString();
+            usuario.setResetPasswordToken(token);
+            usuario.setResetPasswordTokenExpiry(LocalDateTime.now().plusHours(1)); // El token expira en 1 hora
+            usuarioRepository.save(usuario);
 
-        emailService.enviarEmailRecuperacionContrasena(usuario.getEmail(), usuario.getTokenVerificacion());
+            try {
+                log.info("GENERATED RESET TOKEN for {}: {}", email, token);
+                emailService.enviarEmailRecuperacionContrasena(usuario.getEmail(), token);
+            } catch (Exception e) {
+                log.error("Error al enviar el email de recuperación de contraseña para {}. El token se ha generado igualmente.", email, e);
+            }
+        }
     }
 
     @Transactional
     public boolean resetPassword(String token, String newPassword) {
-        Usuario usuario = usuarioRepository.findByTokenVerificacion(token)
-                .orElseThrow(() -> new ResourceNotFoundException("Token de recuperación no válido"));
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByResetPasswordToken(token);
+        if (usuarioOpt.isEmpty()) {
+            return false;
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        if (usuario.getResetPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+            return false; // El token ha expirado
+        }
 
         usuario.setPassword(passwordEncoder.encode(newPassword));
-        usuario.setTokenVerificacion(null);
-        usuarioRepository.save(usuario);
+        usuario.setResetPasswordToken(null);
+        usuario.setResetPasswordTokenExpiry(null);
+        usuarioRepository.saveAndFlush(usuario);
 
         return true;
     }
@@ -120,4 +150,6 @@ public class UsuarioService {
         usuario.setCredito(nuevoCredito);
         return usuarioRepository.save(usuario);
     }
+
+
 }

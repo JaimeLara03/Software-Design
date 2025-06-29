@@ -13,6 +13,11 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface JwtResponse {
   token: string;
   type: string;

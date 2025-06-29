@@ -1,4 +1,4 @@
-package edu.uclm.esi.iso2.users.domain.users.model;
+package edu.uclm.esi.iso2.users.domain.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import jakarta.persistence.ElementCollection;
@@ -55,6 +56,10 @@ public class Usuario {
     private boolean verificado;
 
     private String tokenVerificacion;
+
+    private String resetPasswordToken;
+
+    private LocalDateTime resetPasswordTokenExpiry;
 
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "usuario_roles", joinColumns = @JoinColumn(name = "usuario_id"))

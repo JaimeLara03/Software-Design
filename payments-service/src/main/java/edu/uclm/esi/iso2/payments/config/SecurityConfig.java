@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,8 +28,8 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true) // To allow @PreAuthorize etc.
 public class SecurityConfig {
 
-    @Value("${jwt.shared.secret}")
-    private String jwtSharedSecret; // Custom property to hold the shared secret
+    @Value("${app.jwt.secret}")
+    private String jwtSecret; // Custom property to hold the shared secret
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -47,18 +48,20 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        // Assuming the jwtSharedSecret is Base64 encoded
-        byte[] keyBytes = Base64.getDecoder().decode(jwtSharedSecret);
-        SecretKey key = new SecretKeySpec(keyBytes, 0, keyBytes.length, "HMACSHA256");
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
+        SecretKey key = new SecretKeySpec(keyBytes, 0, keyBytes.length, "HMACSHA512");
+        return NimbusJwtDecoder.withSecretKey(key)
+                .macAlgorithm(MacAlgorithm.HS512)
+                .build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Frontend URL
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setExposedHeaders(List.of("Access-Control-Allow-Origin"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -8,6 +8,8 @@ import { RegisterComponent } from './components/user/register/register.component
 import { LoginComponent } from './components/user/login/login.component';
 import { PaymentComponent } from './components/user/payment/payment.component';
 import { ProfileComponent } from './components/user/profile/profile.component';
+import { ForgotPasswordComponent } from './components/user/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/user/reset-password/reset-password.component';
 import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
@@ -16,6 +18,8 @@ const routes: Routes = [
   { path: 'retrieve-circuit/:id', component: RetrieveCircuitComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'recuperar-password', component: ForgotPasswordComponent },
+  { path: 'reset-password/:token', component: ResetPasswordComponent },
   { path: 'payment', component: PaymentComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }

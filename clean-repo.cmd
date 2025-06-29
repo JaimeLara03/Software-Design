@@ -13,6 +13,16 @@ echo.
 pause
 echo.
 
+REM ---------------- Configuración Maven ----------------
+REM La variable de entorno MAVEN_HOME debe apuntar a la carpeta donde está instalado Maven
+if not defined MAVEN_HOME (
+  echo Por favor defina la variable de entorno MAVEN_HOME con la ruta de Maven. >&2
+  pause
+  goto :end
+)
+set "MVN=%MAVEN_HOME%\bin\mvn.cmd"
+REM -----------------------------------------------------
+
 REM --- 1. Limpieza del Backend (Todos los modulos Maven) ---
 echo [1/3] Limpiando proyectos de backend (Maven)...
 echo.
@@ -21,7 +31,7 @@ REM Se mueve temporalmente a un submodulo para usar su wrapper
 cd circuits-service
 
 REM Llama al wrapper para limpiar el proyecto raiz. Maven mostrara su progreso.
-call mvnw.cmd -f ../pom.xml clean
+call "%MVN%" -f ..\pom.xml clean
 if %errorlevel% neq 0 (
     cd ..
     echo.

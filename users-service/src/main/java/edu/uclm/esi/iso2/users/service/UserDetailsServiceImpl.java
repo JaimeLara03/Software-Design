@@ -7,8 +7,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.uclm.esi.iso2.users.domain.users.model.Usuario;
-import edu.uclm.esi.iso2.users.domain.users.repository.UsuarioRepository;
+import edu.uclm.esi.iso2.users.domain.model.Usuario;
+import edu.uclm.esi.iso2.users.domain.repository.UsuarioRepository;
 import edu.uclm.esi.iso2.users.security.services.UserDetailsImpl;
 
 @Service

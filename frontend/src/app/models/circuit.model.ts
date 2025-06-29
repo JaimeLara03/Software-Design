@@ -1,3 +1,5 @@
+import { Puerta } from './puerta.model';
+
 export interface Circuit {
   id?: number;
   nombre?: string;
@@ -5,6 +7,6 @@ export interface Circuit {
   ubicacion?: string;
   coste?: number;
   qubits?: number;
-  gates?: any;
+    puertas?: Puerta[];
   needsCredit?: boolean;
 }
