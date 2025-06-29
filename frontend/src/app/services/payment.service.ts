@@ -13,14 +13,10 @@ export class PaymentService {
   constructor(private http: HttpClient) { }
 
   procesarPago(paymentRequest: PaymentRequest): Observable<any> {
-    return this.http.post<any>(`${API_URL}procesar`, paymentRequest);
-  }
-
-  verificarPago(referenciaPago: string): Observable<any> {
-    return this.http.get<any>(`${API_URL}verificar/${referenciaPago}`);
+    return this.http.post<any>(`${API_URL}crear-payment-intent`, paymentRequest);
   }
 
   getHistorialPagos(usuarioId: number): Observable<Payment[]> {
-    return this.http.get<Payment[]>(`${API_URL}historial/${usuarioId}`);
+    return this.http.get<Payment[]>(`${API_URL}usuario/${usuarioId}`);
   }
 }

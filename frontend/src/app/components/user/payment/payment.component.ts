@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PaymentService } from '../../../services/payment.service';
 import { AuthService } from '../../../services/auth.service';
-import { PaymentRequest } from '../../../models/payment.model';
+import { Payment, PaymentRequest } from '../../../models/payment.model';
 
 // Declara Stripe (viene de la librería cargada en index.html)
 declare var Stripe: any;
@@ -19,11 +19,11 @@ export class PaymentComponent implements OnInit, AfterViewInit {
   isSuccess = false;
   isFailed = false;
   errorMessage = '';
+  paymentHistory: Payment[] = [];
   userId: number = 0;
   pendingCircuit: any = null;
   paymentMethods = [
     { id: 'tarjeta', name: 'Tarjeta de Crédito/Débito' },
-    { id: 'paypal', name: 'PayPal' },
     { id: 'transferencia', name: 'Transferencia Bancaria' }
   ];
 
@@ -47,6 +47,8 @@ export class PaymentComponent implements OnInit, AfterViewInit {
     const user = this.authService.getUser();
     this.userId = user.id;
 
+    this.loadPaymentHistory();
+
     const pendingCircuitData = sessionStorage.getItem('pendingCircuit');
     if (pendingCircuitData) {
       this.pendingCircuit = JSON.parse(pendingCircuitData);
@@ -54,12 +56,57 @@ export class PaymentComponent implements OnInit, AfterViewInit {
 
     this.paymentForm = this.formBuilder.group({
       monto: [this.pendingCircuit?.cost || 10, [Validators.required, Validators.min(1)]],
-      metodoPago: ['tarjeta', Validators.required]
+      metodoPago: ['tarjeta', Validators.required],
+      cardholderName: ['', Validators.required] // Requerido para la tarjeta
+    });
+
+    // Suscribirse a los cambios del método de pago para ajustar validadores
+    const cardholderNameControl = this.paymentForm.get('cardholderName');
+    this.paymentForm.get('metodoPago')?.valueChanges.subscribe((value: string) => {
+      if (value === 'tarjeta') {
+        cardholderNameControl?.setValidators([Validators.required]);
+      } else {
+        cardholderNameControl?.clearValidators();
+      }
+      cardholderNameControl?.updateValueAndValidity();
+    });
+  }
+
+  loadPaymentHistory(): void {
+    this.paymentService.getHistorialPagos(this.userId).subscribe({
+      next: (history: Payment[]) => {
+        this.paymentHistory = history;
+      },
+      error: (err: any) => {
+        console.error('Error fetching payment history', err);
+      }
     });
   }
 
   ngAfterViewInit(): void {
-    this.stripe = Stripe('pk_test_51RaIgO2LOA8q9cPGirYeXV058sFMJN9OFV67FgRfbs496IxJyJMRkB9nL3XaAD9xBI3xPWebTJ88U4jMyLnK2oqj00B6ovDuvz'); // <-- pon aquí tu clave pública Stripe
+    // Inicializa Stripe aquí, pero no montes el elemento todavía
+    this.stripe = Stripe('pk_test_51RaIgO2LOA8q9cPGirYeXV058sFMJN9OFV67FgRfbs496IxJyJMRkB9nL3XaAD9xBI3xPWebTJ88U4jMyLnK2oqj00B6ovDuvz');
+
+    // Escucha los cambios en el método de pago
+    this.paymentForm.get('metodoPago')?.valueChanges.subscribe((value: string) => {
+      if (value === 'tarjeta') {
+        // Usa un pequeño retraso para asegurar que el div esté en el DOM
+        setTimeout(() => this.mountCardElement(), 0);
+      } else {
+        this.unmountCardElement();
+      }
+    });
+
+    // Monta el elemento si 'tarjeta' es el valor inicial
+    if (this.paymentForm.get('metodoPago')?.value === 'tarjeta') {
+      this.mountCardElement();
+    }
+  }
+
+  mountCardElement(): void {
+    if (this.cardElement) {
+      this.cardElement.unmount();
+    }
     const elements = this.stripe.elements();
     this.cardElement = elements.create('card');
     this.cardElement.mount('#card-element');
@@ -69,6 +116,12 @@ export class PaymentComponent implements OnInit, AfterViewInit {
         this.cardErrors = event.error ? event.error.message : '';
       });
     });
+  }
+
+  unmountCardElement(): void {
+    if (this.cardElement) {
+      this.cardElement.unmount();
+    }
   }
 
   get f() { return this.paymentForm.controls; }
@@ -87,19 +140,21 @@ export class PaymentComponent implements OnInit, AfterViewInit {
       // 1. Pide al backend crear PaymentIntent y obtener client_secret
       const paymentRequest: PaymentRequest = {
         usuarioId: this.userId,
-        circuitoId: this.pendingCircuit?.id || 0,
         monto: this.f['monto'].value,
         metodoPago: this.f['metodoPago'].value
       };
 
       try {
         const response: any = await this.paymentService.procesarPago(paymentRequest).toPromise();
-        const clientSecret = response.client_secret;
+        const clientSecret = response.clientSecret;
 
         // 2. Confirma el pago con Stripe.js usando Elements
         const { error, paymentIntent } = await this.stripe.confirmCardPayment(clientSecret, {
           payment_method: {
-            card: this.cardElement
+            card: this.cardElement,
+            billing_details: {
+              name: this.f['cardholderName'].value
+            }
           }
         });
 
@@ -116,7 +171,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           this.isFailed = true;
           this.errorMessage = 'Pago no completado. Inténtalo de nuevo.';
         }
-      } catch (err) {
+      } catch (err: any) {
         this.isFailed = true;
         this.errorMessage = (err as any).error?.message || 'Error al procesar el pago';
       }
@@ -124,7 +179,6 @@ export class PaymentComponent implements OnInit, AfterViewInit {
       // Métodos paypal o transferencia siguen igual que antes, llamar al backend directamente
       const paymentRequest: PaymentRequest = {
         usuarioId: this.userId,
-        circuitoId: this.pendingCircuit?.id || 0,
         monto: this.f['monto'].value,
         metodoPago: this.f['metodoPago'].value
       };
@@ -135,7 +189,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           sessionStorage.removeItem('pendingCircuit');
           setTimeout(() => this.router.navigate(['/profile']), 3000);
         },
-        error: err => {
+        error: (err: any) => {
           this.isFailed = true;
           this.errorMessage = err.error?.message || 'Error al procesar el pago';
         }

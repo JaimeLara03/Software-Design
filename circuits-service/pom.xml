@@ -80,6 +80,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Dependencia con Payments Service -->
+        <dependency>
+            <groupId>edu.uclm.esi.iso2.payments</groupId>
+            <artifactId>payments-service</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
 
     </dependencies>
 

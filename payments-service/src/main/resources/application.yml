@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: payments-service
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=users_db;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: 
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8083
+
+stripe:
+  secret:
+    key: 
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET:your_stripe_webhook_secret}
+
+# Logging
+logging:
+
+app:
+  jwt:
+    secret: "OU9yWktKbVE3Vnh3UEZkNkEyeXZSOEpjUzV1WDFuMEJHaE1lVHFVeldsWXAzYTRiRHNDZkdoSmtMbU5vUHFScw=="
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+      springframework:
+        transaction: TRACE
+    com:
+      zaxxer:
+        hikari: DEBUG
+    root: INFO

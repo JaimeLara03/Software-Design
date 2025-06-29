@@ -16,10 +16,8 @@ public class CircuitsClient {
 
     private final WebClient webClient;
 
-    public CircuitsClient(@Value("${circuits.service.url:http://localhost:8082}") String baseUrl) {
-        this.webClient = WebClient.builder()
-                .baseUrl(baseUrl)
-                .build();
+    public CircuitsClient(WebClient.Builder webClientBuilder, @Value("${circuits.service.url:http://localhost:8082}") String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
     public Map<?, ?> getCircuitoById(Long id) {

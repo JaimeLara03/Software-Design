@@ -16,10 +16,8 @@ public class UsersClient {
 
     private final WebClient webClient;
 
-    public UsersClient(@Value("${users.service.url:http://localhost:8081}") String baseUrl) {
-        this.webClient = WebClient.builder()
-                .baseUrl(baseUrl)
-                .build();
+    public UsersClient(WebClient.Builder webClientBuilder, @Value("${users.service.url:http://localhost:8081}") String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
     public Map<?, ?> getUsuarioById(Long id) {

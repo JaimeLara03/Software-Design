@@ -1,4 +1,4 @@
-package edu.uclm.esi.iso2.payments.domain.payments.service;
+package edu.uclm.esi.iso2.payments.domain.service;
 
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -6,31 +6,36 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 import edu.uclm.esi.iso2.payments.client.CircuitsClient;
 import edu.uclm.esi.iso2.payments.client.UsersClient;
-import edu.uclm.esi.iso2.payments.exception.ResourceNotFoundException;
+import edu.uclm.esi.iso2.payments.domain.model.PagoRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 import jakarta.annotation.PostConstruct;
-import java.time.LocalDateTime;
+import edu.uclm.esi.iso2.payments.domain.model.Pago;
+
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class PagoService {
 
     private final CircuitsClient circuitsClient;
     private final UsersClient usersClient;
-    private final ConcurrentHashMap<String, Map<String, Object>> pagosMem = new ConcurrentHashMap<>();
+    private final PagoRepository pagoRepository;
 
-    private final String stripeSecretKey;
+    @Value("${stripe.secret.key}")
+    private String stripeSecretKey;
 
-    public PagoService(CircuitsClient circuitsClient,
-                       UsersClient usersClient,
-                       @Value("${stripe.secretKey}") String stripeSecretKey) {
+    public PagoService(CircuitsClient circuitsClient, UsersClient usersClient, PagoRepository pagoRepository) {
         this.circuitsClient = circuitsClient;
         this.usersClient = usersClient;
-        this.stripeSecretKey = stripeSecretKey;
+        this.pagoRepository = pagoRepository;
     }
 
     @PostConstruct
@@ -38,24 +43,38 @@ public class PagoService {
         Stripe.apiKey = stripeSecretKey;  // Configuramos la clave de Stripe tras construcción del bean
     }
 
-    public Map<String, Object> procesarPago(Long usuarioId, Long circuitoId, String metodoPago) {
-        var usuario = usersClient.getUsuarioById(usuarioId);
-        var circuito = circuitsClient.getCircuitoById(circuitoId);
-        double coste = Double.parseDouble(circuito.get("coste").toString());
+    public PaymentIntent crearPaymentIntent(Long usuarioId, double monto) throws StripeException {
+        // Validamos que el usuario exista antes de procesar el pago
+        usersClient.getUsuarioById(usuarioId);
 
-        if (!usersClient.comprobarCredito(usuarioId, coste)) {
-            return Map.of("success", false, "message", "Crédito insuficiente");
-        }
+        long amountCents = Math.round(monto * 100);
 
-        long amountCents = Math.round(coste * 100);
-        String referencia = UUID.randomUUID().toString();
+        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                .setAmount(amountCents)
+                .setCurrency("eur")
+                .setDescription("Recarga de crédito para el usuario " + usuarioId)
+                .putMetadata("userId", String.valueOf(usuarioId))
+                .setAutomaticPaymentMethods(
+                        PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                                .setEnabled(true)
+                                .build())
+                .build();
+
+        return PaymentIntent.create(params);
+    }
+
+    public Map<String, Object> procesarPago(Long usuarioId, double monto, String metodoPago) {
+        // Validamos que el usuario exista antes de procesar el pago
+        usersClient.getUsuarioById(usuarioId);
+
+        long amountCents = Math.round(monto * 100);
 
         try {
             PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                     .setAmount(amountCents)
                     .setCurrency("eur")
-                    .setDescription("Pago circuito " + circuitoId)
-                    .putMetadata("referencia", referencia)
+                    .setDescription("Recarga de crédito para el usuario " + usuarioId)
+                    .putMetadata("userId", String.valueOf(usuarioId))
                     .setAutomaticPaymentMethods(
                         PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
                             .setEnabled(true)
@@ -65,39 +84,39 @@ public class PagoService {
 
             PaymentIntent intent = PaymentIntent.create(params);
 
-            Map<String, Object> info = Map.of(
-                    "referencia", referencia,
-                    "usuarioId", usuarioId,
-                    "circuitoId", circuitoId,
-                    "monto", coste,
-                    "estado", intent.getStatus(),
-                    "stripeId", intent.getId(),
-                    "fecha", LocalDateTime.now().toString()
-            );
-            pagosMem.put(referencia, info);
-
             return Map.of(
-                    "success", true,
-                    "estado", intent.getStatus(),
-                    "referencia", referencia,
                     "clientSecret", intent.getClientSecret()
             );
         } catch (StripeException e) {
-            return Map.of("success", false, "message", "Stripe error: " + e.getMessage());
+            throw new RuntimeException("Error processing payment with Stripe: " + e.getMessage(), e);
         }
     }
 
-    public Map<String, Object> verificarEstadoPago(String referencia) {
-        Map<String, Object> pago = pagosMem.get(referencia);
-        if (pago == null) {
-            throw new ResourceNotFoundException("Pago no encontrado: " + referencia);
+    public List<Pago> getPagosByUserId(String userId) {
+        return pagoRepository.findByUserId(userId);
+    }
+
+    @Transactional
+    public void handleSuccessfulPayment(PaymentIntent paymentIntent) {
+        String stripePaymentId = paymentIntent.getId();
+        String userIdString = paymentIntent.getMetadata().get("userId");
+        if (userIdString == null) {
+            throw new RuntimeException("User ID not found in payment intent metadata");
         }
-        try {
-            PaymentIntent intent = PaymentIntent.retrieve(pago.get("stripeId").toString());
-            pago.put("estado", intent.getStatus());
-            return Map.of("success", true, "estado", intent.getStatus(), "referencia", referencia);
-        } catch (StripeException e) {
-            return Map.of("success", false, "message", "Error Stripe: " + e.getMessage());
+        Long userId = Long.valueOf(userIdString);
+        BigDecimal amount = BigDecimal.valueOf(paymentIntent.getAmount()).divide(new BigDecimal(100));
+        String currency = paymentIntent.getCurrency();
+
+        Pago pago = new Pago(stripePaymentId, userIdString, amount, currency);
+        pagoRepository.save(pago);
+
+        Map<?, ?> user = usersClient.getUsuarioById(userId);
+        if (user != null && user.containsKey("credito")) {
+            double currentCredit = ((Number) user.get("credito")).doubleValue();
+            double amountToAdd = amount.doubleValue();
+            usersClient.actualizarCredito(userId, currentCredit + amountToAdd);
+        } else {
+            throw new RuntimeException("User not found or credit information is missing for user " + userId);
         }
     }
 }

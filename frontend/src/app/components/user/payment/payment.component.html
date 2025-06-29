@@ -38,8 +38,15 @@
         </div>
 
         <!-- Campos específicos para tarjeta de crédito -->
-        <!-- Elimina inputs de número de tarjeta, CVV, fecha expiración -->
         <div *ngIf="f['metodoPago'].value === 'tarjeta'">
+          <div class="mb-3">
+            <label for="cardholderName" class="form-label">Nombre del Titular</label>
+            <input type="text" id="cardholderName" class="form-control" formControlName="cardholderName">
+            <div *ngIf="isSubmitted && f['cardholderName'].errors" class="text-danger">
+              <div *ngIf="f['cardholderName'].errors['required']">El nombre del titular es obligatorio.</div>
+            </div>
+          </div>
+
           <label class="form-label">Datos de la Tarjeta</label>
           <div id="card-element" class="form-control"></div>
           <div class="text-danger mt-2" *ngIf="cardErrors">{{ cardErrors }}</div>
@@ -67,10 +74,34 @@
           {{ errorMessage }}
         </div>
 
-        <div class="d-grid gap-2">
+        <div class="d-grid gap-2 mt-4">
           <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid">Realizar Pago</button>
         </div>
       </form>
     </ng-container>
+
+    <!-- Historial de Pagos -->
+    <div *ngIf="paymentHistory.length > 0" class="mt-5">
+      <hr>
+      <h4>Historial de Pagos</h4>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID de Pago</th>
+            <th>Monto</th>
+            <th>Moneda</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pago of paymentHistory">
+            <td>{{ pago.stripePaymentId }}</td>
+            <td>{{ pago.amount | currency:pago.currency:'symbol' }}</td>
+            <td>{{ pago.currency.toUpperCase() }}</td>
+            <td>{{ pago.paymentDate | date:'medium' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

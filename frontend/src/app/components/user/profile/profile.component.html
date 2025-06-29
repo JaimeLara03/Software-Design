@@ -48,26 +48,25 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Circuito ID</th>
+
                   <th>Monto</th>
-                  <th>Método de Pago</th>
+                  <th>Moneda</th>
                   <th>Fecha</th>
                   <th>Estado</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let payment of paymentHistory">
-                  <td>{{ payment.id }}</td>
-                  <td>{{ payment.circuitoId }}</td>
-                  <td>{{ payment.monto }} €</td>
-                  <td>{{ payment.metodoPago }}</td>
-                  <td>{{ payment.fechaPago | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ payment.stripePaymentId }}</td>
+                  <td>{{ (payment.amount / 100) | currency:'EUR' }}</td>
+                  <td>{{ payment.currency | uppercase }}</td>
+                  <td>{{ payment.paymentDate | date:'dd/MM/yyyy HH:mm' }}</td>
                   <td>
                     <span class="badge" [ngClass]="{
-                      'bg-success': payment.estado === 'COMPLETADO',
-                      'bg-warning': payment.estado === 'PENDIENTE',
-                      'bg-danger': payment.estado === 'FALLIDO'
-                    }">{{ payment.estado }}</span>
+                      'bg-success': payment.status === 'succeeded',
+                      'bg-warning': payment.status === 'processing',
+                      'bg-danger': payment.status === 'failed'
+                    }">{{ payment.status }}</span>
                   </td>
                 </tr>
               </tbody>

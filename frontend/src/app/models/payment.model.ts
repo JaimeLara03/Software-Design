@@ -1,17 +1,15 @@
 export interface Payment {
-  id?: number;
-  usuarioId: number;
-  circuitoId: number;
-  monto: number;
-  referenciaPago?: string;
-  fechaPago?: Date;
-  estado?: string;
-  metodoPago: string;
+  id: string;
+  stripePaymentId: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  paymentDate: Date;
+  status: string;
 }
 
 export interface PaymentRequest {
   usuarioId: number;
-  circuitoId: number;
   monto: number;
   metodoPago: string;
   numeroTarjeta?: string;
